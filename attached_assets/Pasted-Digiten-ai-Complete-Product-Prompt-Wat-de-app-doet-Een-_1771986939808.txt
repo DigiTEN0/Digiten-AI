@@ -1,0 +1,137 @@
+Digiten.ai — Complete Product Prompt
+Wat de app doet
+Een multi-tenant SaaS CPQ platform voor service bedrijven (bouw, IT, installatie, etc.) om leads te ontvangen, offertes te maken, te versturen, te laten ondertekenen en te factureren. Minimale prijs: €200/maand per tenant.
+
+Entiteiten (database)
+Organization — bedrijfsgegevens, logo, kleuren, BTW, valuta, Stripe/Mollie koppeling
+PriceMatrix — diensten/producten met prijs, eenheid, categorie, optioneel, dependencies
+Quotation — offerte met klantgegevens, status, totalen, handtekening, audit log, betaallink
+QuoteItem — losse regels van een offerte (naam, qty, prijs, optioneel/verplicht)
+FormTemplate — lead form configuratie (velden, header, submit tekst)
+User — ingelogde gebruikers met rol (admin/user)
+Pagina's
+/Home — Landing Page (publiek)
+Hero sectie: "Stuur offertes in minuten, niet uren"
+Features grid (lead forms, digitale handtekening, automatische mails, facturatie)
+Pricing: Starter €200/m, Pro €350/m, Enterprise custom
+Testimonials, FAQ
+CTA: "Start gratis proefperiode" → Stripe checkout → account aanmaken
+/Onboarding — Setup Wizard (na registratie)
+Stap 1: Bedrijfsnaam, logo upload, primaire kleur, BTW-nummer
+Stap 2: Eerste diensten toevoegen aan Price Matrix
+Stap 3: Lead form customizen + publiceren
+Stap 4: "Je bent live!" — confetti animatie, link naar dashboard
+/Dashboard
+KPI's: totale omzet, pipeline waarde, nieuwe leads, openstaande facturen
+Pipeline kolommen: New Leads / Quote Sent / Awaiting Signature / Invoiced / Paid
+Recente activiteit feed
+Snelkoppelingen: nieuwe offerte, lead form link kopiëren
+/Leads
+Tabel met alle inkomende leads van het lead form
+Status badges, klantgegevens, ingediende services
+Knop: "Maak offerte van lead" → opent quote builder pre-filled
+/Quotes
+Tabel met alle offertes, filter op status
+Acties: verstuur per mail, kopieer link, download PDF, omzet naar factuur
+Status flow: new_lead → quote_sent → viewed → approved → rejected → invoiced → paid
+/QuoteBuilder (of modal)
+Klantgegevens invullen
+Services toevoegen vanuit PriceMatrix
+Optionele items aan/uit
+Korting per item of op totaal
+Notities, geldigheid, BTW toggle
+Preview PDF in real-time
+Verstuur knop → mail naar klant + status → quote_sent
+/ClientQuote/:token (publiek)
+Offerte bekijken als klant (geen login nodig)
+Optionele items aan/uitzetten → totaal herberekenen
+"Accepteren" knop → digital signature pad → opslaan → mail naar bedrijf
+"Afwijzen" knop met optioneel bericht
+Status automatisch → viewed bij openen, approved of rejected bij actie
+/Invoice/:token (publiek)
+Factuurweergave voor klant
+Download als PDF
+Betaalknop (Stripe of Mollie link)
+Status → paid na betaling via webhook
+/PriceMatrix
+CRUD tabel voor diensten/producten
+Categorieën, eenheid (m², uur, vast, unit)
+Dependencies (als item X, dan automatisch item Y suggereren)
+Sortering via drag & drop
+/FormBuilder
+Drag & drop form builder
+Veldtypes: text, email, phone, textarea, select, services block, heading, divider
+Header/subtitel/knoptekst instellen
+Preview tab
+Share tab: directe link + embed code
+Publish/unpublish toggle
+/LeadForm?org=xxx (publiek)
+Dynamische form op basis van FormTemplate
+Services selecteren (met of zonder aantallen)
+Submit → Quotation aanmaken met status new_lead
+Succes scherm met bedankbericht
+/Settings
+Bedrijfsgegevens bewerken
+Logo uploaden
+Kleuren instellen (primair, accent) → live preview
+Betaalprovider koppelen (Stripe/Mollie API keys)
+Quote footer tekst, algemene voorwaarden
+Email instellingen (from name)
+Backend Functions
+getLeadFormData (publiek)
+Haalt FormTemplate, Organization en PriceMatrix op voor een org_id
+Geen auth nodig
+submitLeadForm (publiek)
+Maakt Quotation + QuoteItems aan van lead form submission
+Genereert secure token voor klantlink
+Stuurt notificatie mail naar bedrijf
+sendQuoteEmail
+Genereert quote PDF (jsPDF)
+Stuurt mail naar klant met link + PDF bijlage
+Update status → quote_sent
+getQuoteByToken (publiek)
+Haalt offerte op via secure token
+Logt viewed event in audit_log
+Update status → viewed
+submitSignature (publiek)
+Slaat handtekening op (base64 PNG)
+Logt IP, user agent, timestamp
+Update status → approved
+Stuurt bevestigingsmail naar klant + notificatie naar bedrijf
+rejectQuote (publiek)
+Update status → rejected
+Slaat afwijzingsreden op
+Stuurt notificatie naar bedrijf
+generateInvoicePDF
+Genereert factuur PDF met jsPDF
+Factuurlayout: bedrijfslogo, BTW, totalen, betaalinstructies
+Retourneert PDF als binary
+sendInvoiceEmail
+Stuurt factuur PDF naar klant
+Update status → invoiced
+stripeWebhook / mollieWebhook
+Verwerkt betaling callback
+Update status → paid
+Stuurt betalingsbevestiging naar klant
+Email flows
+Nieuwe lead → mail naar bedrijf: "Nieuwe aanvraag van [naam]"
+Offerte verstuurd → mail naar klant: link + PDF
+Offerte bekeken → (optioneel) intern Slack/mail notificatie
+Offerte geaccepteerd → mail naar klant (bevestiging) + mail naar bedrijf
+Offerte afgewezen → mail naar bedrijf met reden
+Factuur verstuurd → mail naar klant: link + PDF
+Betaling ontvangen → mail naar klant (kwitantie) + mail naar bedrijf
+Subscription / Monetisatie
+Landing page met Stripe Checkout voor abonnementen
+Plans: Starter (€200/m), Pro (€350/m), Enterprise (custom)
+Na succesvolle betaling → account aanmaken + onboarding starten
+Subscription status bijhouden op Organization entity
+Als subscription verlopen → read-only modus + upgrade prompt
+UI/UX principes
+Dark sidebar navigatie (al gebouwd)
+Primaire kleur instelbaar per tenant (al gebouwd)
+Volledig responsive (mobile + desktop)
+Nederlandse én Engelse teksten door elkaar (afhankelijk van tenant)
+Loading states overal
+Toast notificaties bij acties
+Confetti bij succesmomenten (offerte ondertekend, betaling ontvangen)
